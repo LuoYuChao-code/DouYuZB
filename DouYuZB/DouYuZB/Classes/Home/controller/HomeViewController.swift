@@ -30,6 +30,7 @@ class HomeViewController: UIViewController {
             childVcs.append(vc)
         }
         let pageView = PageContentView(frame: pageViewFrame, childVcs: childVcs, parentsVc: self)
+        pageView.delegate = self
         return pageView
     }()
     
@@ -70,6 +71,13 @@ extension HomeViewController{
         let qrcodeItem = UIBarButtonItem(imageName: "Image_scan", highImageName: "Image_scan_click", size: size)
         
         navigationItem.rightBarButtonItems = [historyItem,searchItem,qrcodeItem]
+    }
+}
+
+extension HomeViewController : PageContentViewDelegate {
+    
+    func pageContentView(contentView: PageContentView, progress: CGFloat, sourceIndex: Int, targetIndex: Int) {
+        pageTitleView.setTitleWthProgress(progress: progress, sourceIndex: sourceIndex, tagrgetIndex: targetIndex)
     }
 }
 

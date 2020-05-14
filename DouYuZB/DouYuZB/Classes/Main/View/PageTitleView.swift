@@ -8,12 +8,17 @@
 
 import UIKit
 
+// MARK - 定义协议
 protocol pageTitleViewDelegate : class {
     func pageTitleView(titleView:PageTitleView ,selectIndex index:Int)
 }
 
+// MARK - 定义变量
 private let kScrollViewLineH : CGFloat = 2
+private let normalColor : (CGFloat, CGFloat, CGFloat) = (85, 85, 85)
+private let selectColor : (CGFloat, CGFloat, CGFloat) = (255, 128, 0)
 
+// MARK - 定义PageTitleView类
 class PageTitleView: UIView {
     private var titles : [String]
     private var currenIndex : Int = 0
@@ -71,7 +76,7 @@ extension PageTitleView{
         
         for(index, title) in titles.enumerated(){
             let label = UILabel()
-            label.textColor = UIColor.darkGray
+            label.textColor = UIColor(r: normalColor.0, g: normalColor.1, b: normalColor.2)
             label.font = UIFont.systemFont(ofSize: 16)
             label.textAlignment = NSTextAlignment.center
             label.tag = index
@@ -109,17 +114,41 @@ extension PageTitleView{
     
     @objc func tapLabel(tap:UITapGestureRecognizer){
         guard  let currenLabel = tap.view as? UILabel else {return}
-        currenLabel.textColor = UIColor.orange
         let oldLabel = self.titlesLabel[currenIndex]
-        oldLabel.textColor = UIColor.darkGray
+        oldLabel.textColor = UIColor(r: normalColor.0, g: normalColor.1, b: normalColor.2)
         currenIndex = currenLabel.tag
-        
+        currenLabel.textColor = UIColor(r: selectColor.0, g: selectColor.1, b: selectColor.2)
+
         let offsetX :CGFloat =  currenLabel.frame.origin.x
         UIView.animate(withDuration: 0.15) {
             self.scrollViewLine.frame.origin.x = offsetX
         }
-        
         delegate?.pageTitleView(titleView: self, selectIndex: currenIndex)
     }
 }
 
+extension PageTitleView{
+    func setTitleWthProgress(progress : CGFloat , sourceIndex : Int, tagrgetIndex : Int){
+        //1.取出获取的titleLabel
+        let sourceLabel = titlesLabel[sourceIndex]
+        let targetLabel = titlesLabel[tagrgetIndex]
+        
+        //2.处理滑动模块的逻辑
+        let moveTotalX = targetLabel.frame.origin.x  - sourceLabel.frame.origin.x
+        let moveX = moveTotalX * progress
+        scrollViewLine.frame.origin.x = sourceLabel.frame.origin.x + moveX
+        
+        //3 颜色的渐变(复杂)
+        // 颜色变化的范围
+        let colorDelta = (selectColor.0 - normalColor.0, selectColor.1 - normalColor.1, selectColor.2 - normalColor.2)
+        
+        //变化sourceLabel
+        sourceLabel.textColor = UIColor(r: selectColor.0 - colorDelta.0 * progress, g: selectColor.1 - colorDelta.1 * progress, b: selectColor.2 - colorDelta.2 * progress)
+        
+        //变化targetLabel
+        targetLabel.textColor = UIColor(r: normalColor.0 + colorDelta.0 * progress, g: normalColor.1 + colorDelta.1 * progress, b: normalColor.2 + colorDelta.2 * progress)
+        
+        // 记录最新的index
+        currenIndex = tagrgetIndex
+    }
+}
